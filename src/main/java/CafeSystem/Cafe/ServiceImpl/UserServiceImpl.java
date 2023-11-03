@@ -4,10 +4,12 @@ package CafeSystem.Cafe.ServiceImpl;
 import CafeSystem.Cafe.Constants.CafeConstants;
 import CafeSystem.Cafe.JWT.CustomerDetailsService;
 import CafeSystem.Cafe.JWT.JWTUtil;
+import CafeSystem.Cafe.JWT.JwtFilter;
 import CafeSystem.Cafe.Models.User;
 import CafeSystem.Cafe.Repository.UserRepository;
 import CafeSystem.Cafe.Service.UserService;
 import CafeSystem.Cafe.Utils.CafeUtility;
+import CafeSystem.Cafe.Wrapper.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +19,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -34,6 +39,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     JWTUtil jwtUtil;
+
+    @Autowired
+    JwtFilter jwtFilter;
 
     @Override
     public ResponseEntity<String> signUp(Map<String, String> requestMap) {
@@ -102,5 +110,61 @@ public class UserServiceImpl implements UserService {
 
         return new ResponseEntity<String>(CafeConstants.BAD_CREDENTIALS,HttpStatus.BAD_REQUEST);
 
+    }
+
+    @Override
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        log.info("REST request to GET All Users");
+        try{
+            if(jwtFilter.isAdmin()){
+                List<User> allUsers = userRepository.getAllUser();
+
+                List<UserDTO> ans = new ArrayList<>();
+                for(User user : allUsers){
+                    ans.add(getUserDTO(user));
+                }
+
+                return new ResponseEntity<List<UserDTO>>(ans,HttpStatus.OK);
+            }else{
+                return new ResponseEntity<List<UserDTO>>(new ArrayList<>(),HttpStatus.UNAUTHORIZED);
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        return new ResponseEntity<List<UserDTO>>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> updateStatus(Map<String, String> requestMap) {
+        log.info("REST request to Update Status, {}",requestMap);
+        try{
+            if(jwtFilter.isAdmin()){
+                Optional<User> user = userRepository.findById(Integer.parseInt(requestMap.get("id")));
+                if(!user.isEmpty()){
+                    userRepository.updateStatus(requestMap.get("status"),Integer.parseInt(requestMap.get("id")));
+                    return CafeUtility.getResponseEntity("User Status Updated SuccessFully",HttpStatus.OK);
+                }else{
+                    CafeUtility.getResponseEntity("User Id does not Exists",HttpStatus.BAD_REQUEST);
+                }
+
+            }else{
+                return CafeUtility.getResponseEntity(CafeConstants.UNAUTHORIZED_ACCESS,HttpStatus.UNAUTHORIZED);
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return CafeUtility.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public UserDTO getUserDTO(User user){
+        UserDTO userDTO = new UserDTO();
+
+        userDTO.setEmail(user.getEmail());
+        userDTO.setContactNumber(user.getContactNumber());
+        userDTO.setName(user.getName());
+        userDTO.setStatus(user.getStatus());
+
+        return userDTO;
     }
 }

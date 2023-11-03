@@ -3,14 +3,14 @@ package CafeSystem.Cafe.Controller;
 import CafeSystem.Cafe.Constants.CafeConstants;
 import CafeSystem.Cafe.Service.UserService;
 import CafeSystem.Cafe.Utils.CafeUtility;
+import CafeSystem.Cafe.Wrapper.UserDTO;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,23 +22,22 @@ public class UserController {
 
     @PostMapping(path = "/signUp")
     public ResponseEntity<String> signUp(@RequestBody(required = true) Map<String, String> requestMap) {
-        try {
             return userService.signUp(requestMap);
-        } catch (Exception exp) {
-            exp.printStackTrace();
-        }
-
-        return CafeUtility.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping(path = "/login")
     public ResponseEntity<String> login(@RequestBody(required = true) Map<String,String> requestMap){
-        try {
             return userService.loginUser(requestMap);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return CafeUtility.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @GetMapping(path = "/getAllUsers")
+    public ResponseEntity<List<UserDTO>>  getAllUsers(){
+        return userService.getAllUsers();
+    };
+
+    @PostMapping(path = "/updateStatus")
+    public ResponseEntity<String> updateStatus(@RequestBody(required = true) Map<String,String> requestMap){
+        return userService.updateStatus(requestMap);
+    }
+
 }
