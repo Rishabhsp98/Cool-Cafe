@@ -40,4 +40,18 @@ public class UserController {
         return userService.updateStatus(requestMap);
     }
 
+    @GetMapping(path = "/checkToken")
+    public ResponseEntity<String> checkToken(){
+        return userService.checkToken();
+    }
+
+    @PostMapping(path = "/changePassword")
+    public ResponseEntity<String> changePassword(@RequestBody Map<String,String> requestMap){
+        return userService.changePassword(requestMap);
+    }
+
+    @PostMapping(path = "/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String,String> requestMap){
+        return userService.forgotPassword(requestMap);
+    }
 }

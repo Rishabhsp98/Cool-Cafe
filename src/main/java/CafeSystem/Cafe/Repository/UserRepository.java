@@ -2,6 +2,7 @@ package CafeSystem.Cafe.Repository;
 
 
 import CafeSystem.Cafe.Models.User;
+import CafeSystem.Cafe.Wrapper.UserDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +28,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Modifying
     @Query("update User u set u.status= :status where u.id =:id")
     Integer updateStatus(String status, Integer id);
+
+
+    @Query("Select u.email from User u where u.role='admin'")
+    List<String> getAllAdmin();
+
+//    @Query("Select u from User u where u.name= :userName")
+//    User findByUserName(String userName);
 }
